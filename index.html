@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AR Street Art</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #loading { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            font-family: sans-serif; 
+            font-size: 20px; 
+            z-index: 10; 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+        }
+        #error { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            font-family: sans-serif; 
+            font-size: 18px; 
+            z-index: 10; 
+            background: rgba(255, 0, 0, 0.8); 
+            padding: 15px 25px; 
+            border-radius: 5px; 
+            display: none; 
+            text-align: center; 
+        }
+        .a-enter-vr { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+    <div id="error">Webcam access failed. Ensure HTTPS and permissions, then refresh the page.</div>
+    <a-scene
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+        vr-mode-ui="enabled: false"
+        renderer="antialias: true"
+    >
+        <a-assets>
+            <a-asset-item id="greed1" src="https://raw.githubusercontent.com/forevermidicom/Guerrilla-AR/main/Greed%201.glb"></a-asset-item>
+        </a-assets>
+        <a-marker preset="hiro" id="hiro-marker">
+            <a-entity id="model-container"></a-entity>
+        </a-marker>
+        <a-entity camera position="0 0 0"></a-entity>
+    </a-scene>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scene = document.querySelector('a-scene');
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const modelContainer = document.getElementById('model-container');
+            fetch('models.json')
+                .then(response => response.json())
+                .then(models => {
+                    models.forEach(model => {
+                        const entity = document.createElement('a-entity');
+                        entity.setAttribute('gltf-model', `#${model.id}`);
+                        entity.setAttribute('position', model.position);
+                        entity.setAttribute('scale', model.scale);
+                        entity.setAttribute('rotation', model.rotation);
+                        modelContainer.appendChild(entity);
+                    });
+                })
+                .catch(err => {
+                    errorDiv.textContent = 'Failed to load models: ' + err.message;
+                    errorDiv.style.display = 'block';
+                });
+            scene.addEventListener('loaded', function () {
+                loadingDiv.style.display = 'none';
+            });
+            scene.addEventListener('arjs-webcam-error', function () {
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+  </html>
