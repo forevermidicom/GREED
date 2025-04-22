@@ -1,7 +1,7 @@
 [
     {
-        "id": "greed-1",
-        "url": "https://raw.githubusercontent.com/forevermidicom/Guerrilla-AR/main/Greed%201.glb",
+        "id": "greed",
+        "url": "https://raw.githubusercontent.com/forevermidicom/Guerrilla-AR/main/GREED.glb",
         "position": "0 0.5 0",
         "scale": "0.5 0.5 0.5",
         "rotation": "0 0 0"
