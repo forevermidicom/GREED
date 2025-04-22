@@ -35,3 +35,24 @@
                     models.forEach(model => {
                         const entity = document.createElement('a-entity');
                         entity.setAttribute('gltf-model', `#${model.id}`);
+                        entity.setAttribute('position', model.position);
+                        entity.setAttribute('scale', model.scale);
+                        entity.setAttribute('rotation', model.rotation);
+                        modelContainer.appendChild(entity);
+                    });
+                })
+                .catch(err => {
+                    errorDiv.textContent = 'Failed to load models: ' + err.message;
+                    errorDiv.style.display = 'block';
+                });
+            scene.addEventListener('loaded', function () {
+                loadingDiv.style.display = 'none';
+            });
+            scene.addEventListener('arjs-webcam-error', function () {
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
