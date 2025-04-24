@@ -19,7 +19,7 @@
         <a-assets>
             <a-asset-item id="greed" src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"></a-asset-item>
         </a-assets>
-        <a-marker preset="hiro" id="hiro-marker">
+        <a-marker type="pattern" patternUrl="https://raw.githubusercontent.com/forevermidicom/GREED/main/new-custom-marker.patt" id="custom-marker">
             <a-entity gltf-model="#greed" position="0 0.5 0" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-entity>
         </a-marker>
         <a-entity camera position="0 0 0"></a-entity>
