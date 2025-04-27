@@ -31,16 +31,33 @@
     </a-scene>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM loaded, initializing scene...");
             const scene = document.querySelector('a-scene');
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
+
             scene.addEventListener('loaded', () => {
+                console.log("Scene loaded, starting MindAR...");
                 scene.systems['mindar-image-system'].start();
                 loadingDiv.style.display = 'none';
             });
-            scene.addEventListener('arError', () => {
+
+            scene.addEventListener('arError', (e) => {
+                console.error("AR error:", e.detail);
                 loadingDiv.style.display = 'none';
                 errorDiv.style.display = 'block';
+            });
+
+            scene.addEventListener('arReady', () => {
+                console.log("MindAR ready, scanning for marker...");
+            });
+
+            scene.addEventListener('targetFound', () => {
+                console.log("Marker detected!");
+            });
+
+            scene.addEventListener('targetLost', () => {
+                console.log("Marker lost.");
             });
         });
     </script>
