@@ -9,17 +9,14 @@
         body { margin: 0; overflow: hidden; background: #000; }
         #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 20px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 5px; }
         #error { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 18px; z-index: 10; background: rgba(255, 0, 0, 0.8); padding: 15px 25px; border-radius: 5px; display: none; text-align: center; }
-        #startButton { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="loading">Loading...</div>
-    <div id="error">AR failed. Use Chrome 81+ (Android) or Safari 15+ (iOS), grant permissions, and refresh.</div>
-    <button id="startButton">Start AR</button>
+    <div id="error">Failed to load model. Check file path and refresh.</div>
     <a-scene
         embedded
         renderer="antialias: true; colorManagement: true;"
-        webxr="optionalFeatures: local-floor; ar-session: true;"
     >
         <a-assets>
             <a-asset-item id="greed" src="./GREED.glb"></a-asset-item>
@@ -33,41 +30,14 @@
             const scene = document.querySelector('a-scene');
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
-            const startButton = document.getElementById('startButton');
 
             scene.addEventListener('loaded', () => {
                 loadingDiv.style.display = 'none';
-                startButton.style.display = 'block';
             });
 
-            startButton.addEventListener('click', async () => {
-                startButton.style.display = 'none';
-                try {
-                    if (navigator.xr) {
-                        const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                        if (supported) {
-                            scene.enterAR();
-                        } else {
-                            errorDiv.textContent = "AR not supported on this device.";
-                            errorDiv.style.display = 'block';
-                        }
-                    } else {
-                        errorDiv.textContent = "WebXR not available in this browser.";
-                        errorDiv.style.display = 'block';
-                    }
-                } catch (err) {
-                    errorDiv.textContent = "AR failed: " + err.message;
-                    errorDiv.style.display = 'block';
-                }
-            });
-
-            scene.addEventListener('enter-ar-failed', (e) => {
-                errorDiv.textContent = "AR failed: " + e.detail.error.message;
+            scene.addEventListener('model-error', () => {
+                loadingDiv.style.display = 'none';
                 errorDiv.style.display = 'block';
-            });
-
-            scene.addEventListener('enter-ar', () => {
-                errorDiv.style.display = 'none';
             });
         });
     </script>
