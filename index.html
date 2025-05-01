@@ -5,56 +5,48 @@
     <title>GREED</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
         #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 20px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 5px; }
         #error { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 18px; z-index: 10; background: rgba(255, 0, 0, 0.8); padding: 15px 25px; border-radius: 5px; display: none; text-align: center; }
+        #startButton { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="loading">Loading...</div>
-    <div id="error">AR failed. Use Chrome/Safari, grant camera permissions, and refresh.</div>
+    <div id="error">AR failed. Use Chrome/Safari, grant permissions, and refresh.</div>
+    <button id="startButton">Start AR</button>
     <a-scene
-        mindar-image="imageTargetSrc: ./custom-marker.mind; autoStart: false; maxTrack: 1;"
         embedded
         renderer="antialias: true"
-        webxr="requiredFeatures: image-tracking"
+        webxr="optionalFeatures: local-floor"
     >
         <a-assets>
             <a-asset-item id="greed" src="./GREED.glb"></a-asset-item>
         </a-assets>
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-entity gltf-model="#greed" position="0 0 0" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-entity>
-        </a-entity>
-        <a-entity camera></a-entity>
-        <!-- Fallback: Show model if AR fails -->
-        <a-entity id="fallback" gltf-model="#greed" position="0 1 0" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000" visible="false"></a-entity>
+        <a-entity gltf-model="#greed" position="0 1 -2" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-entity>
+        <a-entity camera position="0 1.6 0" look-controls></a-entity>
     </a-scene>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const scene = document.querySelector('a-scene');
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
-            const fallback = document.getElementById('fallback');
+            const startButton = document.getElementById('startButton');
 
             scene.addEventListener('loaded', () => {
-                scene.systems['mindar-image-system'].start();
                 loadingDiv.style.display = 'none';
+                startButton.style.display = 'block';
             });
 
-            scene.addEventListener('arError', () => {
+            startButton.addEventListener('click', () => {
+                startButton.style.display = 'none';
+                scene.enterAR();
+            });
+
+            scene.addEventListener('enter-ar-failed', () => {
                 loadingDiv.style.display = 'none';
                 errorDiv.style.display = 'block';
-                fallback.setAttribute('visible', 'true'); // Show fallback if AR fails
-            });
-
-            scene.addEventListener('arReady', () => {
-                loadingDiv.style.display = 'none';
-            });
-
-            scene.addEventListener('targetFound', () => {
-                fallback.setAttribute('visible', 'false');
             });
         });
     </script>
