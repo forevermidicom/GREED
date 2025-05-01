@@ -14,9 +14,9 @@
 </head>
 <body>
     <div id="loading">Loading...</div>
-    <div id="error">AR failed. Ensure HTTPS and permissions, then refresh.</div>
+    <div id="error">AR failed. Use Chrome/Safari, grant camera permissions, and refresh.</div>
     <a-scene
-        mindar-image="imageTargetSrc: ./custom-marker.mind; autoStart: false;"
+        mindar-image="imageTargetSrc: ./custom-marker.mind; autoStart: false; maxTrack: 1;"
         embedded
         renderer="antialias: true"
         webxr="requiredFeatures: image-tracking"
@@ -28,36 +28,33 @@
             <a-entity gltf-model="#greed" position="0 0 0" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-entity>
         </a-entity>
         <a-entity camera></a-entity>
+        <!-- Fallback: Show model if AR fails -->
+        <a-entity id="fallback" gltf-model="#greed" position="0 1 0" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000" visible="false"></a-entity>
     </a-scene>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM loaded, initializing scene...");
             const scene = document.querySelector('a-scene');
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
+            const fallback = document.getElementById('fallback');
 
             scene.addEventListener('loaded', () => {
-                console.log("Scene loaded, starting MindAR...");
                 scene.systems['mindar-image-system'].start();
                 loadingDiv.style.display = 'none';
             });
 
-            scene.addEventListener('arError', (e) => {
-                console.error("AR error:", e.detail);
+            scene.addEventListener('arError', () => {
                 loadingDiv.style.display = 'none';
                 errorDiv.style.display = 'block';
+                fallback.setAttribute('visible', 'true'); // Show fallback if AR fails
             });
 
             scene.addEventListener('arReady', () => {
-                console.log("MindAR ready, scanning for marker...");
+                loadingDiv.style.display = 'none';
             });
 
             scene.addEventListener('targetFound', () => {
-                console.log("Marker detected!");
-            });
-
-            scene.addEventListener('targetLost', () => {
-                console.log("Marker lost.");
+                fallback.setAttribute('visible', 'false');
             });
         });
     </script>
