@@ -13,15 +13,12 @@
 </head>
 <body>
     <div id="loading">Loading...</div>
-    <div id="error">Failed to load model. Check file path and refresh.</div>
+    <div id="error">Failed to render. Try another device or browser.</div>
     <a-scene
         embedded
         renderer="antialias: true; colorManagement: true;"
     >
-        <a-assets>
-            <a-asset-item id="greed" src="./GREED.glb"></a-asset-item>
-        </a-assets>
-        <a-entity gltf-model="#greed" position="0 0 -2" scale="0.5 0.5 0.5" rotation="0 90 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-entity>
+        <a-box position="0 0 -2" color="#4CC3D9" scale="1 1 1"></a-box>
         <a-entity camera position="0 1.6 0" look-controls></a-entity>
         <a-sky color="#000000"></a-sky>
     </a-scene>
@@ -35,7 +32,7 @@
                 loadingDiv.style.display = 'none';
             });
 
-            scene.addEventListener('model-error', () => {
+            scene.addEventListener('render-error', () => {
                 loadingDiv.style.display = 'none';
                 errorDiv.style.display = 'block';
             });
