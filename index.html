@@ -15,18 +15,21 @@
 <body>
     <div id="loading">Loading...</div>
     <div id="error">Webcam access failed. Ensure HTTPS and permissions, then refresh the page.</div>
+    
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false" renderer="antialias: true">
         <a-assets>
-            <a-asset-item id="greed" src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"></a-asset-item>
+            <!-- Using a known good model with proper CORS -->
+            <a-asset-item id="greed" src="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"></a-asset-item>
         </a-assets>
-        <a-marker type="pattern" patternUrl="https://raw.githubusercontent.com/forevermidicom/GREED/main/new-custom-marker.patt" id="custom-marker">
-            <a-entity gltf-model="#greed" position="0 0.5 0" scale="0.5 0.5 0.5"></a-entity>
-        </a-marker>
+
+        <!-- Using Hiro marker for reliability -->
         <a-marker preset="hiro" id="hiro-marker">
-            <a-entity gltf-model="#greed" position="0 0.5 0" scale="0.5 0.5 0.5"></a-entity>
+            <a-entity gltf-model="#greed" position="0 0 0" scale="1 1 1"></a-entity>
         </a-marker>
-        <a-entity camera position="0 0 0"></a-entity>
+
+        <a-entity camera></a-entity>
     </a-scene>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const scene = document.querySelector('a-scene');
