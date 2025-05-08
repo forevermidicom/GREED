@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR.js Hiro Marker Test</title>
+    <title>AR.js with Hiro Marker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
@@ -23,7 +23,7 @@
     </style>
   </head>
   <body>
-    <div id="status">Loading... Point camera at a Hiro marker.</div>
+    <div id="status">Loading... Point camera at the Hiro marker.</div>
 
     <a-scene
       embedded
@@ -32,7 +32,7 @@
       vr-mode-ui="enabled: false">
 
       <!-- Hiro Marker -->
-      <a-marker preset="hiro" id="marker">
+      <a-marker type="pattern" url="https://raw.githubusercontent.com/forevermidicom/YOUR_REPO/main/pattern-hiro.patt" id="hiro-marker">
         <a-box id="red-box" position="0 0.5 0" color="red" visible="false"></a-box>
       </a-marker>
 
@@ -42,7 +42,7 @@
 
     <script>
       window.addEventListener("DOMContentLoaded", () => {
-        const marker = document.querySelector("#marker");
+        const marker = document.querySelector("#hiro-marker");
         const box = document.querySelector("#red-box");
         const status = document.getElementById("status");
 
