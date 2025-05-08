@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Guerrilla AR</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -29,41 +29,42 @@
       embedded
       arjs="sourceType: webcam; debugUIEnabled: false;"
       renderer="antialias: true; logarithmicDepthBuffer: true;"
-      vr-mode-ui="enabled: false">
-
-      <!-- Custom Marker -->
-      <a-marker type="pattern" url="https://raw.githubusercontent.com/forevermidicom/GREED/main/pattern-hiro.patt" id="custom-marker">
-        <!-- Load 3D model -->
-        <a-entity id="model"
-                  gltf-model="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"
-                  position="0 0.5 0"
-                  scale="0.5 0.5 0.5"
-                  visible="false">
+      vr-mode-ui="enabled: false"
+    >
+      <!-- Marker -->
+      <a-marker type="pattern" url="https://raw.githubusercontent.com/forevermidicom/GREED/main/pattern-hiro.patt" id="marker">
+        <a-entity
+          id="model"
+          gltf-model="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"
+          position="0 0 0"
+          scale="0.1 0.1 0.1"
+          rotation="0 0 0"
+          visible="false">
         </a-entity>
       </a-marker>
 
-      <!-- AR Camera -->
+      <!-- Camera -->
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const marker = document.querySelector("#custom-marker");
-        const model = document.querySelector("#model");
-        const status = document.getElementById("status");
+      window.addEventListener('DOMContentLoaded', () => {
+        const marker = document.querySelector('#marker');
+        const model = document.querySelector('#model');
+        const status = document.getElementById('status');
 
-        marker.addEventListener("markerFound", () => {
-          model.setAttribute("visible", "true");
-          status.innerText = "Marker detected ✔ Model visible.";
+        marker.addEventListener('markerFound', () => {
+          model.setAttribute('visible', 'true');
+          status.innerText = '✔ Marker detected. Model should be visible.';
         });
 
-        marker.addEventListener("markerLost", () => {
-          model.setAttribute("visible", "false");
-          status.innerText = "Marker lost ✖";
+        marker.addEventListener('markerLost', () => {
+          model.setAttribute('visible', 'false');
+          status.innerText = '✖ Marker lost.';
         });
 
-        document.querySelector("a-scene").addEventListener("loaded", () => {
-          status.innerText = "Ready. Point your camera at the marker.";
+        document.querySelector('a-scene').addEventListener('loaded', () => {
+          status.innerText = 'Ready. Point at the Hiro marker.';
         });
       });
     </script>
