@@ -20,6 +20,10 @@
         z-index: 10;
         font-size: 14px;
       }
+      /* Camera feed debugging styles */
+      #camera-feed {
+        display: none; /* Make sure the camera feed is hidden until everything is working */
+      }
     </style>
   </head>
   <body>
@@ -27,8 +31,8 @@
 
     <a-scene
       embedded
-      arjs="sourceType: webcam; debugUIEnabled: false;"
-      renderer="antialias: true"
+      arjs="sourceType: webcam; debugUIEnabled: true; trackingMethod: best;"
+      renderer="antialias: true;  preserveDrawingBuffer: true;"
       vr-mode-ui="enabled: false">
 
       <!-- Define your assets -->
@@ -40,17 +44,17 @@
       <!-- Hiro Marker -->
       <a-marker type="pattern" url="https://raw.githubusercontent.com/forevermidicom/YOUR_REPO/main/pattern-hiro.patt" id="hiro-marker">
         <!-- 3D model entity -->
-        <a-entity gltf-model="#3d-model" position="0 0.5 0" scale="0.5 0.5 0.5" visible="false"></a-entity>
+        <a-entity id="3d-model" gltf-model="#3d-model" position="0 0.5 0" scale="0.5 0.5 0.5" visible="false"></a-entity>
       </a-marker>
 
       <!-- AR Camera -->
-      <a-entity camera></a-entity>
+      <a-entity camera id="camera-feed"></a-entity>
     </a-scene>
 
     <script>
       window.addEventListener("DOMContentLoaded", () => {
         const marker = document.querySelector("#hiro-marker");
-        const model = document.querySelector("a-entity[gltf-model='#3d-model']");
+        const model = document.querySelector("#3d-model");
         const status = document.getElementById("status");
 
         marker.addEventListener("markerFound", () => {
@@ -63,11 +67,17 @@
           status.innerText = "Marker lost ✖";
         });
 
-        // Debugging: Ensure 3D model is loading
+        // Debugging: Console logging the camera feed and 3D model loading
+        const cameraFeed = document.querySelector("#camera-feed");
+        cameraFeed.addEventListener("loaded", () => {
+          console.log("Camera feed loaded successfully.");
+        });
+
         model.addEventListener('loaded', () => {
           console.log("3D model loaded successfully.");
         });
 
+        // Initial loaded status
         document.querySelector("a-scene").addEventListener("loaded", () => {
           status.innerText = "Ready. Point at Hiro marker.";
         });
