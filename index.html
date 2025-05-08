@@ -33,7 +33,8 @@
 
       <!-- Hiro Marker -->
       <a-marker type="pattern" url="https://raw.githubusercontent.com/forevermidicom/YOUR_REPO/main/pattern-hiro.patt" id="hiro-marker">
-        <a-box id="red-box" position="0 0.5 0" color="red" visible="false"></a-box>
+        <!-- 3D model -->
+        <a-entity id="3d-model" gltf-model="url(https://raw.githubusercontent.com/forevermidicom/YOUR_REPO/main/3D_model.glb)" position="0 0.5 0" scale="0.5 0.5 0.5" visible="false"></a-entity>
       </a-marker>
 
       <!-- AR Camera -->
@@ -43,16 +44,16 @@
     <script>
       window.addEventListener("DOMContentLoaded", () => {
         const marker = document.querySelector("#hiro-marker");
-        const box = document.querySelector("#red-box");
+        const model = document.querySelector("#3d-model");
         const status = document.getElementById("status");
 
         marker.addEventListener("markerFound", () => {
-          box.setAttribute("visible", "true"); // Show the box when the marker is found
+          model.setAttribute("visible", "true"); // Show model when marker is detected
           status.innerText = "Marker detected ✔ Model loaded.";
         });
 
         marker.addEventListener("markerLost", () => {
-          box.setAttribute("visible", "false"); // Hide the box when the marker is lost
+          model.setAttribute("visible", "false"); // Hide model when marker is lost
           status.innerText = "Marker lost ✖";
         });
 
