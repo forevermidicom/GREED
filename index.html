@@ -1,48 +1,23 @@
-<!-- forevermidi.com 2025 -->
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Guerrilla AR</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <title>Guerrilla AR Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 20px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 5px; }
-        #error { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 18px; z-index: 10; background: rgba(255, 0, 0, 0.8); padding: 15px 25px; border-radius: 5px; display: none; text-align: center; }
-        .a-enter-vr { display: none !important; }
+      body { margin: 0; overflow: hidden; }
+      #message { position: fixed; top: 10px; left: 0; right: 0; text-align: center; color: white; font-family: sans-serif; background: rgba(0,0,0,0.6); padding: 10px; z-index: 10; }
     </style>
-</head>
-<body>
-    <div id="loading">Loading...</div>
-    <div id="error">Webcam access failed. Ensure HTTPS and permissions, then refresh the page.</div>
-    
+  </head>
+  <body>
+    <div id="message">Point your camera at a Hiro marker</div>
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false" renderer="antialias: true">
-        <a-assets>
-            <!-- Using a known good model with proper CORS -->
-            <a-asset-item id="greed" src="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"></a-asset-item>
-        </a-assets>
-
-        <!-- Using Hiro marker for reliability -->
-        <a-marker preset="hiro" id="hiro-marker">
-            <a-entity gltf-model="#greed" position="0 0 0" scale="1 1 1"></a-entity>
-        </a-marker>
-
-        <a-entity camera></a-entity>
+      <a-marker preset="hiro">
+        <a-box position="0 0.5 0" material="color: red;"></a-box>
+      </a-marker>
+      <a-entity camera></a-entity>
     </a-scene>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const scene = document.querySelector('a-scene');
-            const loadingDiv = document.getElementById('loading');
-            const errorDiv = document.getElementById('error');
-            scene.addEventListener('loaded', function () {
-                loadingDiv.style.display = 'none';
-            });
-            scene.addEventListener('arjs-webcam-error', function () {
-                loadingDiv.style.display = 'none';
-                errorDiv.style.display = 'block';
-            });
-        });
-    </script>
-</body>
+  </body>
 </html>
