@@ -27,8 +27,8 @@
 
     <a-scene
       embedded
-      arjs="sourceType: webcam; debugUIEnabled: false;"
-      renderer="antialias: true"
+      arjs="sourceType: webcam; debugUIEnabled: true; trackingMethod: best;"
+      renderer="antialias: true; preserveDrawingBuffer: true"
       vr-mode-ui="enabled: false">
 
       <!-- Hiro Marker -->
@@ -47,12 +47,12 @@
         const status = document.getElementById("status");
 
         marker.addEventListener("markerFound", () => {
-          box.setAttribute("visible", "true");
-          status.innerText = "Marker detected ✔";
+          box.setAttribute("visible", "true"); // Show the box when the marker is found
+          status.innerText = "Marker detected ✔ Model loaded.";
         });
 
         marker.addEventListener("markerLost", () => {
-          box.setAttribute("visible", "false");
+          box.setAttribute("visible", "false"); // Hide the box when the marker is lost
           status.innerText = "Marker lost ✖";
         });
 
