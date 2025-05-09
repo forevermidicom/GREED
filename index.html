@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>AR.js Model Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
   <style>
@@ -27,62 +29,61 @@
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend:artoolkit; matrixCodeType: 3x3; detectionMode: mono_and_matrix; showMarker: true;"
-    renderer="antialias: true; logarithmicDepthBuffer: true"
+    arjs="sourceType: webcam; debugUIEnabled: false; trackingBackend: artoolkit; detectionMode: mono;"
+    renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
   >
-    <a-assets>
-      <!-- Ensure this is the correct path for your model -->
+    <a-assets timeout="30000">
       <a-asset-item
         id="GREED"
-        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb">
+        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"
+        crossorigin="anonymous">
       </a-asset-item>
     </a-assets>
 
-    <a-marker
-      type="pattern"
-      url="https://raw.githubusercontent.com/forevermidicom/GREED/main/pattern-hiro.patt"
-      id="marker">
+    <!-- Use preset Hiro marker for universal compatibility -->
+    <a-marker preset="hiro" id="marker">
       <a-entity
         id="model"
         gltf-model="#GREED"
         scale="0.1 0.1 0.1"
         position="0 0 0"
-        rotation="0 0 0"
-        visible="false">
+        rotation="0 0 0">
       </a-entity>
     </a-marker>
 
-    <!-- Camera Entity for AR -->
-    <a-entity camera></a-entity>
+    <a-entity camera position="0 0 0"></a-entity>
   </a-scene>
 
   <script>
-    // Debugging to log issues
     const marker = document.querySelector('#marker');
     const model = document.querySelector('#model');
     const status = document.querySelector('#status');
 
-    // When marker is found
     marker.addEventListener('markerFound', () => {
-      model.setAttribute('visible', 'true');
+      model.setAttribute('visible', true);
       status.innerText = '✔ Marker detected. Model loaded.';
+      console.log('Marker found, model should be visible.');
     });
 
-    // When marker is lost
     marker.addEventListener('markerLost', () => {
-      model.setAttribute('visible', 'false');
+      model.setAttribute('visible', false);
       status.innerText = '✖ Marker lost. Keep it in view.';
+      console.log('Marker lost, model hidden.');
     });
 
-    // Initial status when scene is ready
     document.querySelector('a-scene').addEventListener('loaded', () => {
       status.innerText = '✅ Ready. Point your camera at the marker.';
+      console.log('Scene loaded successfully.');
     });
 
-    // Log errors to console
+    document.querySelector('a-assets').addEventListener('error', (e) => {
+      console.error('Asset Load Error:', e);
+      status.innerText = '❌ Error loading model.';
+    });
+
     document.querySelector('a-scene').addEventListener('error', (e) => {
-      console.error("AR.js Error:", e.detail);
+      console.error('AR.js Error:', e.detail);
       status.innerText = '❌ Error loading AR assets.';
     });
   </script>
