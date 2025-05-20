@@ -40,13 +40,13 @@
         crossorigin="anonymous">
       </a-asset-item>
       <a-asset-item
-        id="custom-marker"
-        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.mind"
+        id="targets"
+        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind"
         crossorigin="anonymous">
       </a-asset-item>
     </a-assets>
 
-    <a-marker type="mind" url="#custom-marker" id="marker">
+    <a-marker type="mind" url="#targets" id="marker">
       <a-entity
         id="model"
         gltf-model="#GREED"
@@ -91,7 +91,7 @@
     });
 
     // Test if the mind file is accessible
-    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.mind')
+    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind')
       .then(response => {
         if (!response.ok) throw new Error('Failed to load mind file');
         console.log('Mind file loaded successfully');
