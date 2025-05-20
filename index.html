@@ -49,11 +49,11 @@
 </head>
 <body>
   <div id="status">Loading AR... Point camera at marker.</div>
-  <div id="version">HTML Version: 5 (targets.mind)</div>
+  <div id="version">HTML Version: 6 (targets.mind)</div>
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: mind; detectionMode: image;"
+    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: mind; detectionMode: image; matrixCodeType: 3x3;"
     renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
   >
