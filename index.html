@@ -37,7 +37,7 @@
 </head>
 <body>
   <div id="status">Loading AR... Point camera at marker.</div>
-  <div id="version">HTML Version: 8 (Hiro Marker)</div>
+  <div id="version">HTML Version: 9 (Hiro Marker)</div>
 
   <a-scene
     embedded
@@ -58,7 +58,7 @@
         id="model"
         gltf-model="#GREED"
         scale="20 20 20"
-        position="0 0 10"
+        position="0 0 0"
         rotation="90 0 0">
       </a-entity>
     </a-marker>
@@ -74,6 +74,9 @@
       marker.querySelector('#model').setAttribute('visible', true);
       status.innerText = '✔ Marker detected. Model loaded.';
       console.log('Marker found, model should be visible.');
+      console.log('Model position:', marker.querySelector('#model').getAttribute('position'));
+      console.log('Model scale:', marker.querySelector('#model').getAttribute('scale'));
+      console.log('Model rotation:', marker.querySelector('#model').getAttribute('rotation'));
     });
 
     marker.addEventListener('markerLost', () => {
@@ -89,8 +92,13 @@
 
     document.querySelector('a-assets').addEventListener('error', (e) => {
       console.error('Asset Load Error:', e);
-      status.innerText = '❌ Error loading assets.';
+      status.innerText = '❌ Error loading assets. Check console.';
     });
 
     document.querySelector('a-scene').addEventListener('error', (e) => {
-      console.error('AR
+      console.error('AR.js Error Details:', e.detail);
+      status.innerText = '❌ Error loading AR assets. Check console.';
+    });
+  </script>
+</body>
+</html>
