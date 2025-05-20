@@ -22,14 +22,26 @@
       font-family: sans-serif;
       z-index: 10;
     }
+    #version {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 12px;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
   <div id="status">Loading AR... Point camera at marker.</div>
+  <div id="version">HTML Version: G-labeled (custom-marker.patt)</div>
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: mind; detectionMode: image;"
+    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: artoolkit; detectionMode: mono;"
     renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
   >
@@ -40,13 +52,13 @@
         crossorigin="anonymous">
       </a-asset-item>
       <a-asset-item
-        id="targets"
-        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind"
+        id="custom-marker"
+        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.patt"
         crossorigin="anonymous">
       </a-asset-item>
     </a-assets>
 
-    <a-marker type="mind" url="#targets" id="marker">
+    <a-marker type="pattern" url="#custom-marker" id="marker">
       <a-entity
         id="model"
         gltf-model="#GREED"
@@ -90,19 +102,12 @@
       status.innerText = '❌ Error loading AR assets.';
     });
 
-    // Test if the mind file is accessible
-    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind')
+    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.patt')
       .then(response => {
-        if (!response.ok) throw new Error('Failed to load mind file');
-        return response.blob();
-      })
-      .then(blob => {
-        console.log('Mind file loaded successfully, size:', blob.size, 'bytes');
+        if (!response.ok) throw new Error('Failed to load patt file');
+        console.log('Patt file loaded successfully');
       })
       .catch(error => {
-        console.error('Mind File Error:', error);
-        status.innerText = '❌ Error loading mind file.';
+        console.error('Patt File Error:', error);
+        status.innerText = '❌ Error loading patt file.';
       });
-  </script>
-</body>
-</html>
