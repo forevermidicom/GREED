@@ -39,10 +39,15 @@
         src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"
         crossorigin="anonymous">
       </a-asset-item>
+      <!-- Preload the pattern file -->
+      <a-asset-item
+        id="hiro-pattern"
+        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/pattern-hiro.patt"
+        crossorigin="anonymous">
+      </a-asset-item>
     </a-assets>
 
-    <!-- Use preset Hiro marker for universal compatibility -->
-    <a-marker preset="hiro" id="marker">
+    <a-marker type="pattern" url="#hiro-pattern" id="marker">
       <a-entity
         id="model"
         gltf-model="#GREED"
@@ -57,17 +62,16 @@
 
   <script>
     const marker = document.querySelector('#marker');
-    const model = document.querySelector('#model');
     const status = document.querySelector('#status');
 
     marker.addEventListener('markerFound', () => {
-      model.setAttribute('visible', true);
+      marker.querySelector('#model').setAttribute('visible', true);
       status.innerText = '✔ Marker detected. Model loaded.';
       console.log('Marker found, model should be visible.');
     });
 
     marker.addEventListener('markerLost', () => {
-      model.setAttribute('visible', false);
+      marker.querySelector('#model').setAttribute('visible', false);
       status.innerText = '✖ Marker lost. Keep it in view.';
       console.log('Marker lost, model hidden.');
     });
@@ -79,7 +83,7 @@
 
     document.querySelector('a-assets').addEventListener('error', (e) => {
       console.error('Asset Load Error:', e);
-      status.innerText = '❌ Error loading model.';
+      status.innerText = '❌ Error loading assets.';
     });
 
     document.querySelector('a-scene').addEventListener('error', (e) => {
