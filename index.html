@@ -49,11 +49,11 @@
 </head>
 <body>
   <div id="status">Loading AR... Point camera at marker.</div>
-  <div id="version">HTML Version: 2 (custom-marker.patt)</div>
+  <div id="version">HTML Version: 5 (targets.mind)</div>
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: artoolkit; detectionMode: mono; patternRatio: 0.5;"
+    arjs="sourceType: webcam; debugUIEnabled: true; trackingBackend: mind; detectionMode: image;"
     renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
   >
@@ -64,13 +64,13 @@
         crossorigin="anonymous">
       </a-asset-item>
       <a-asset-item
-        id="custom-marker"
-        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.patt"
+        id="targets"
+        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind"
         crossorigin="anonymous">
       </a-asset-item>
     </a-assets>
 
-    <a-marker type="pattern" url="#custom-marker" id="marker">
+    <a-marker type="mind" url="#targets" id="marker">
       <a-entity
         id="model"
         gltf-model="#GREED"
@@ -111,43 +111,31 @@
 
     document.querySelector('a-assets').addEventListener('error', (e) => {
       console.error('Asset Load Error:', e);
-      status.innerText = '❌ Error loading assets. Check console for details.';
+      status.innerText = '❌ Error loading assets. Check console.';
     });
 
     document.querySelector('a-scene').addEventListener('error', (e) => {
       console.error('AR.js Error Details:', e.detail);
-      status.innerText = '❌ Error loading AR assets. Check console for details.';
+      status.innerText = '❌ Error loading AR assets. Check console.';
     });
 
-    // Check if the patt file is accessible and valid
-    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/custom-marker.patt')
+    // Validate mind file
+    fetch('https://raw.githubusercontent.com/forevermidicom/GREED/main/targets.mind')
       .then(response => {
-        if (!response.ok) throw new Error(`Failed to load patt file: ${response.statusText}`);
-        return response.text();
+        if (!response.ok) throw new Error(`Failed to load mind file: ${response.status} - ${response.statusText}`);
+        return response.blob();
       })
-      .then(data => {
-        console.log('Patt file loaded successfully, content preview:', data.substring(0, 100));
-        if (!data.includes('255') || data.trim().length < 100) {
-          throw new Error('Patt file appears invalid or corrupted.');
+      .then(blob => {
+        console.log('Mind file loaded successfully, size:', blob.size, 'bytes');
+        if (blob.size < 100) {
+          status.innerText = '❌ Mind file too small. Regenerate it.';
+          throw new Error('Mind file appears invalid.');
         }
       })
       .catch(error => {
-        console.error('Patt File Error:', error.message);
-        status.innerText = '❌ Error loading patt file. Check console for details.';
+        console.error('Mind File Error:', error.message);
+        status.innerText = '❌ Error loading mind file. Check console.';
       });
-
-    // Ensure webcam initialization
-    window.addEventListener('load', () => {
-      const scene = document.querySelector('a-scene');
-      if (!scene.hasLoaded) {
-        scene.addEventListener('loaded', () => {
-          console.log('Scene loaded after window load');
-        });
-      }
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        status.innerText = '❌ Webcam not supported on this device.';
-      }
-    });
   </script>
 </body>
 </html>
