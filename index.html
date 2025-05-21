@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AR Street Art - V 28 Markerless</title>
+    <title>AR Street Art - V 29 Markerless</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,17 +11,19 @@
         body { margin: 0; overflow: hidden; }
         #status { position: fixed; top: 0; left: 0; right: 0; padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; z-index: 10; }
         #version { position: fixed; bottom: 10px; left: 10px; padding: 5px; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; font-size: 12px; z-index: 10; }
+        #arButton { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); padding: 10px 20px; background: #fff; border: none; border-radius: 5px; font-family: sans-serif; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
     <div id="status">Initializing AR... Please ensure you are on HTTPS.</div>
-    <div id="version">HTML Version: 28 Markerless</div>
+    <div id="version">HTML Version: 29 Markerless</div>
+    <button id="arButton" style="display: none;">Start AR</button>
 
     <a-scene
         webxr="requiredFeatures: immersive-ar, hit-test; overlayElement: #status;"
         arjs="sourceType: webcam; debugUIEnabled: false;"
         renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
-        vr-mode-ui="enabled: true; arButtonEnabled: true"
+        vr-mode-ui="enabled: false"
         ar-placement-component
     >
         <a-assets timeout="30000">
@@ -38,11 +40,13 @@
                 const scene = this.el;
                 const modelContainer = document.querySelector('#model-container');
                 const statusDisplay = document.querySelector('#status');
+                const arButton = document.querySelector('#arButton');
                 const modelAsset = document.querySelector('#GREED');
 
                 let placed = false;
                 let hitTestSource = null;
                 let referenceSpace = null;
+                let xrSession = null;
 
                 statusDisplay.innerText = 'Checking AR support...';
 
@@ -52,35 +56,34 @@
                         statusDisplay.innerText = 'AR not supported. Use Chrome 81+ (Android) or Safari 16+ (iOS) with ARCore/ARKit.';
                         return;
                     }
-                    statusDisplay.innerText = 'Tap the AR button to start. (Requires HTTPS)';
+                    arButton.style.display = 'block';
+                    statusDisplay.innerText = 'Tap the "Start AR" button below. (Requires HTTPS)';
                 });
 
-                scene.addEventListener('enter-vr', async () => {
-                    if (!scene.is('ar-mode')) {
-                        statusDisplay.innerText = 'AR mode not entered. Ensure device supports WebXR AR.';
-                        return;
-                    }
-                    statusDisplay.innerText = 'Scanning environment... Move your device to detect a surface.';
+                arButton.addEventListener('click', async () => {
                     try {
-                        const xrSession = scene.renderer.xr.getSession();
+                        xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
                         const canvas = scene.canvas;
                         const gl = canvas.getContext('webgl');
                         await gl.makeXRCompatible();
                         xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+                        scene.renderer.xr.setSession(xrSession);
 
                         referenceSpace = await xrSession.requestReferenceSpace('local-floor');
                         hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
 
-                        xrSession.requestAnimationFrame(this.tick);
+                        arButton.style.display = 'none';
                         statusDisplay.innerText = 'Move your device to scan for a surface. Tap to place model.';
+                        xrSession.requestAnimationFrame(this.tick);
                     } catch (error) {
-                        console.error('Failed to start WebXR hit test:', error);
+                        console.error('Failed to start WebXR:', error);
                         statusDisplay.innerText = `AR error: ${error.message}. Ensure device supports WebXR AR.`;
                     }
                 });
 
                 scene.addEventListener('exit-vr', () => {
-                    statusDisplay.innerText = 'Exited AR. Tap AR button to restart.';
+                    statusDisplay.innerText = 'Exited AR. Tap "Start AR" to restart.';
+                    arButton.style.display = 'block';
                     placed = false;
                     modelContainer.setAttribute('visible', false);
                     if (hitTestSource) {
@@ -111,8 +114,8 @@
                     } else if (placed) {
                         reticle.setAttribute('visible', false);
                     }
-                    if (scene.renderer.xr.getSession()) {
-                        scene.renderer.xr.getSession().requestAnimationFrame(this.tick);
+                    if (xrSession) {
+                        xrSession.requestAnimationFrame(this.tick);
                     }
                 };
 
