@@ -72,7 +72,7 @@
 
     marker.addEventListener('markerFound', () => {
       marker.querySelector('#model').setAttribute('visible', true);
-      status.innerText = '✔ Marker detected. Model loaded.';
+      status.innerText = 'Marker detected. Model loaded.';
       console.log('Marker found, model should be visible.');
       console.log('Model position:', marker.querySelector('#model').getAttribute('position'));
       console.log('Model scale:', marker.querySelector('#model').getAttribute('scale'));
@@ -81,23 +81,23 @@
 
     marker.addEventListener('markerLost', () => {
       marker.querySelector('#model').setAttribute('visible', false);
-      status.innerText = '✖ Marker lost. Keep it in view.';
+      status.innerText = 'Marker lost. Keep it in view.';
       console.log('Marker lost, model hidden.');
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-      status.innerText = '✅ Ready. Point your camera at the marker.';
+      status.innerText = 'Ready. Point your camera at the marker.';
       console.log('Scene loaded successfully.');
     });
 
     document.querySelector('a-assets').addEventListener('error', (e) => {
       console.error('Asset Load Error:', e);
-      status.innerText = '❌ Error loading assets. Check console.';
+      status.innerText = 'Error loading assets. Check console.';
     });
 
     document.querySelector('a-scene').addEventListener('error', (e) => {
       console.error('AR.js Error Details:', e.detail);
-      status.innerText = '❌ Error loading AR assets. Check console.';
+      status.innerText = 'Error loading AR assets. Check console.';
     });
   </script>
 </body>
