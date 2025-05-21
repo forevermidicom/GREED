@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer - V 18 Markerless</title>
+  <title>AR.js Markerless Viewer - V 19 Markerless</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,8 +15,8 @@
   </style>
 </head>
 <body>
-  <div id="status">Loading AR... Tap to place model.</div>
-  <div id="version">HTML Version: 18 Markerless</div>
+  <div id="status">Initializing AR... Please wait.</div>
+  <div id="version">HTML Version: 19 Markerless</div>
 
   <a-scene
     embedded
@@ -45,22 +45,22 @@
         const scene = document.querySelector('a-scene').systems['webxr'];
         if (!scene.xrSession) {
           status.innerText = 'Starting AR session... Please wait.';
-          scene.startSession();
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Give WebXR time to start
+          await scene.startSession();
+          await new Promise(resolve => setTimeout(resolve, 3000)); // Ensure time for initialization
         }
 
         if (!scene.xrSession) {
-          throw new Error('WebXR session not initialized.');
+          throw new Error('WebXR session did not start.');
         }
 
         referenceSpace = await scene.xrSession.requestReferenceSpace('local');
         hitTestSource = await scene.xrSession.requestHitTestSource({ space: referenceSpace });
 
-        status.innerText = 'AR ready. Tap to place model.';
-        console.log('WebXR initialized successfully.');
+        status.innerText = 'AR Ready. Tap to place model.';
+        console.log('WebXR session started successfully.');
       } catch (error) {
         console.error('WebXR initialization error:', error);
-        status.innerText = 'Error initializing AR. Try reloading the page.';
+        status.innerText = 'AR failed to start. Try reloading the page.';
       }
     }
 
@@ -83,8 +83,8 @@
           }
         });
       } else {
-        console.warn('AR session not ready yet.');
-        status.innerText = 'AR session not fully initialized. Please wait.';
+        console.warn('AR session not ready.');
+        status.innerText = 'AR session still initializing... Please wait.';
       }
     });
 
