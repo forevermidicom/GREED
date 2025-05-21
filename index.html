@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Model Viewer</title>
+  <title>AR.js Markerless Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,95 +10,52 @@
   <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; }
-    #status {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      padding: 10px;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      font-family: sans-serif;
-      z-index: 10;
-    }
-    #version {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      padding: 5px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      font-family: sans-serif;
-      font-size: 12px;
-      z-index: 10;
-    }
+    #status { position: fixed; top: 0; left: 0; right: 0; padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; z-index: 10; }
+    #version { position: fixed; bottom: 10px; left: 10px; padding: 5px; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; font-size: 12px; z-index: 10; }
   </style>
 </head>
 <body>
-  <div id="status">Loading AR... Point camera at marker.</div>
-  <div id="version">HTML Version: 13 (Hiro Marker)</div>
+  <div id="status">Loading AR... Tap to place model.</div>
+  <div id="version">HTML Version: 14 (Markerless)</div>
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; trackingBackend: artoolkit; detectionMode: mono;"
+    webxr="requiredFeatures: hit-test"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
     renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
   >
     <a-assets timeout="30000">
-      <a-asset-item
-        id="GREED"
-        src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb"
-        crossorigin="anonymous">
-      </a-asset-item>
+      <a-asset-item id="GREED" src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb" crossorigin="anonymous"></a-asset-item>
     </a-assets>
 
-    <a-marker preset="hiro" id="marker">
-      <a-entity
-        id="model"
-        gltf-model="#GREED"
-        scale="20 20 20"
-        position="0 0 0"
-        rotation="270 0 0">
-      </a-entity>
-    </a-marker>
-
-    <a-entity camera position="0 0 0"></a-entity>
+    <a-entity id="model" gltf-model="#GREED" scale="10 10 10" rotation="0 0 0" visible="false"></a-entity>
+    <a-entity id="camera" camera position="0 0 0" raycaster="objects: .clickable" look-controls></a-entity>
   </a-scene>
 
   <script>
-    const marker = document.querySelector('#marker');
     const status = document.querySelector('#status');
-
-    marker.addEventListener('markerFound', () => {
-      marker.querySelector('#model').setAttribute('visible', true);
-      status.innerText = 'Marker detected. Model loaded.';
-      console.log('Marker found, model should be visible.');
-      console.log('Model position:', marker.querySelector('#model').getAttribute('position'));
-      console.log('Model scale:', marker.querySelector('#model').getAttribute('scale'));
-      console.log('Model rotation:', marker.querySelector('#model').getAttribute('rotation'));
-    });
-
-    marker.addEventListener('markerLost', () => {
-      marker.querySelector('#model').setAttribute('visible', false);
-      status.innerText = 'Marker lost. Keep it in view.';
-      console.log('Marker lost, model hidden.');
-    });
+    const model = document.querySelector('#model');
+    let placed = false;
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-      status.innerText = 'Ready. Point your camera at the marker.';
+      status.innerText = 'Ready. Tap to place the model.';
       console.log('Scene loaded successfully.');
     });
 
-    document.querySelector('a-assets').addEventListener('error', (e) => {
-      console.error('Asset Load Error:', e);
-      status.innerText = 'Error loading assets. Check console.';
+    document.querySelector('a-scene').addEventListener('enter-vr', () => {
+      status.innerText = 'AR started. Tap to place model.';
+      console.log('AR session started.');
     });
 
-    document.querySelector('a-scene').addEventListener('error', (e) => {
-      console.error('AR.js Error Details:', e.detail);
-      status.innerText = 'Error loading AR assets. Check console.';
-    });
-  </script>
-</body>
-</html>
+    document.addEventListener('click', () => {
+      if (!placed) {
+        const scene = document.querySelector('a-scene').systems['webxr'].realityHelper;
+        if (scene && scene.xrSession) {
+          scene.xrSession.requestHitTestSource({ space: scene.xrSession.localReferenceSpace }).then(hitTestSource => {
+            scene.xrSession.requestAnimationFrame((time, frame) => {
+              const hitTestResults = frame.getHitTestResults(hitTestSource);
+              if (hitTestResults.length > 0) {
+                const pose = hitTestResults[0].getPose(scene.xrSession.localReferenceSpace);
+                const position = pose.transform.position;
+                model.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
