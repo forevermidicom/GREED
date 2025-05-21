@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer - V 17 Markerless</title>
+  <title>AR.js Markerless Viewer - V 18 Markerless</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,11 +16,11 @@
 </head>
 <body>
   <div id="status">Loading AR... Tap to place model.</div>
-  <div id="version">HTML Version: 17 Markerless</div>
+  <div id="version">HTML Version: 18 Markerless</div>
 
   <a-scene
     embedded
-    webxr="optionalFeatures: hit-test"
+    webxr="requiredFeatures: hit-test"
     arjs="sourceType: webcam; debugUIEnabled: false;"
     renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
     vr-mode-ui="enabled: false"
@@ -40,12 +40,15 @@
     let hitTestSource = null;
     let referenceSpace = null;
 
-    document.querySelector('a-scene').addEventListener('loaded', async () => {
-      status.innerText = 'Ready. Tap to place the model.';
-      console.log('Scene loaded successfully.');
-
+    async function initializeWebXR() {
       try {
         const scene = document.querySelector('a-scene').systems['webxr'];
+        if (!scene.xrSession) {
+          status.innerText = 'Starting AR session... Please wait.';
+          scene.startSession();
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Give WebXR time to start
+        }
+
         if (!scene.xrSession) {
           throw new Error('WebXR session not initialized.');
         }
@@ -53,12 +56,15 @@
         referenceSpace = await scene.xrSession.requestReferenceSpace('local');
         hitTestSource = await scene.xrSession.requestHitTestSource({ space: referenceSpace });
 
-        console.log('WebXR session and hit-testing initialized.');
+        status.innerText = 'AR ready. Tap to place model.';
+        console.log('WebXR initialized successfully.');
       } catch (error) {
-        console.error('Error initializing WebXR:', error);
-        status.innerText = 'Error initializing AR. Reload the page.';
+        console.error('WebXR initialization error:', error);
+        status.innerText = 'Error initializing AR. Try reloading the page.';
       }
-    });
+    }
+
+    document.querySelector('a-scene').addEventListener('loaded', initializeWebXR);
 
     document.addEventListener('click', () => {
       if (!placed && hitTestSource && referenceSpace) {
@@ -77,8 +83,8 @@
           }
         });
       } else {
-        console.warn('Hit-test source or reference space not ready.');
-        status.innerText = 'AR session not fully initialized. Try again.';
+        console.warn('AR session not ready yet.');
+        status.innerText = 'AR session not fully initialized. Please wait.';
       }
     });
 
