@@ -1,109 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer - V 22 Markerless</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.6/aframe/build/aframe-ar.min.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #status { position: fixed; top: 0; left: 0; right: 0; padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; z-index: 10; }
-    #version { position: fixed; bottom: 10px; left: 10px; padding: 5px; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; font-size: 12px; z-index: 10; }
-  </style>
+    <title>AR Street Art - V 23 Markerless</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #status { position: fixed; top: 0; left: 0; right: 0; padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; z-index: 10; }
+        #version { position: fixed; bottom: 10px; left: 10px; padding: 5px; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; font-size: 12px; z-index: 10; }
+    </style>
 </head>
 <body>
-  <div id="status">Initializing AR... Please wait.</div>
-  <div id="version">HTML Version: 22 Markerless</div>
+    <div id="status">Initializing AR...</div>
+    <div id="version">HTML Version: 23 Markerless</div>
 
-  <a-scene
-    embedded
-    webxr="requiredFeatures: hit-test"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
-    vr-mode-ui="enabled: false"
-  >
-    <a-assets timeout="30000">
-      <a-asset-item id="GREED" src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb" crossorigin="anonymous"></a-asset-item>
-    </a-assets>
+    <a-scene
+        webxr="requiredFeatures: immersive-ar, hit-test; overlayElement: #status;"
+        renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
+        vr-mode-ui="enabled: false"
+        ar-placement-component
+    >
+        <a-assets timeout="30000">
+            <a-asset-item id="GREED" src="https://raw.githubusercontent.com/forevermidicom/GREED/main/GREED.glb" crossorigin="anonymous"></a-asset-item>
+        </a-assets>
 
-    <a-entity id="model" gltf-model="#GREED" scale="10 10 10" rotation="0 0 0" visible="false"></a-entity>
-    <a-entity id="camera" camera position="0 0 0" raycaster="objects: .clickable" look-controls></a-entity>
-  </a-scene>
+        <a-camera position="0 0 0" look-controls></a-camera>
 
-  <script>
-    const status = document.querySelector('#status');
-    const model = document.querySelector('#model');
-    let placed = false;
-    let hitTestSource = null;
-    let referenceSpace = null;
-    let xrSession = null;
+        <a-entity id="model-container" visible="false"></a-entity>
 
-    async function initializeWebXR() {
-      try {
-        // Check HTTPS
-        if (window.location.protocol !== 'https:') {
-          throw new Error('WebXR requires HTTPS. Use a secure server.');
-        }
+    </a-scene>
 
-        // Check WebXR support
-        if (!navigator.xr || !(await navigator.xr.isSessionSupported('immersive-ar'))) {
-          throw new Error('WebXR immersive-ar not supported on this device/browser.');
-        }
+    <script>
+        AFRAME.registerComponent('ar-placement-component', {
+            init: function () {
+                const scene = this.el;
+                const modelContainer = document.querySelector('#model-container');
+                const statusDisplay = document.querySelector('#status');
+                const modelAsset = document.querySelector('#GREED');
 
-        // Start WebXR session
-        xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
-        const scene = document.querySelector('a-scene');
-        const canvas = scene.canvas;
-        const gl = canvas.getContext('webgl');
-        gl.makeXRCompatible(); // Ensure WebGL context is XR-compatible
-        xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
-        scene.renderer.xr.setSession(xrSession); // Bind session to A-Frame renderer
+                let placed = false;
+                let hitTestSource = null;
+                let referenceSpace = null;
 
-        referenceSpace = await xrSession.requestReferenceSpace('local-floor');
-        hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
+                scene.addEventListener('loaded', () => {
+                    statusDisplay.innerText = 'Initializing AR...';
+                });
 
-        status.innerText = 'AR Ready. Tap to place model.';
-        console.log('WebXR session started successfully.');
-      } catch (error) {
-        console.error('WebXR initialization error:', error.message);
-        status.innerText = `AR failed: ${error.message}. Use Chrome 81+ (Android) or Safari 16+ (iOS) with ARCore/ARKit support.`;
-      }
-    }
+                scene.addEventListener('enter-vr', async () => {
+                    if (scene.is('ar-mode')) {
+                        statusDisplay.innerText = 'AR Ready. Tap to place model.';
+                        console.log('Entered AR mode. WebXR session started.');
 
-    document.querySelector('a-scene').addEventListener('loaded', initializeWebXR);
+                        const xrSession = scene.renderer.xr.getSession();
+                        referenceSpace = await xrSession.requestReferenceSpace('viewer');
+                        hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
 
-    document.addEventListener('click', () => {
-      if (!placed && hitTestSource && referenceSpace && xrSession) {
-        xrSession.requestAnimationFrame((time, frame) => {
-          const hitTestResults = frame.getHitTestResults(hitTestSource);
-          if (hitTestResults.length > 0) {
-            const pose = hitTestResults[0].getPose(referenceSpace);
-            model.setAttribute('position', `${pose.transform.position.x} ${pose.transform.position.y} ${pose.transform.position.z}`);
-            model.setAttribute('visible', true);
-            placed = true;
-            status.innerText = 'Model placed. Move around to view.';
-            console.log('Model placed at:', pose.transform.position);
-          } else {
-            status.innerText = 'No surface detected. Keep scanning.';
-          }
+                        xrSession.requestAnimationFrame(this.tick);
+                    }
+                });
+
+                scene.addEventListener('exit-vr', () => {
+                    statusDisplay.innerText = 'Exited AR. Reload page to restart.';
+                    placed = false;
+                    modelContainer.setAttribute('visible', false);
+                });
+
+                const reticle = document.createElement('a-entity');
+                reticle.setAttribute('geometry', { primitive: 'ring', radiusOuter: 0.1, radiusInner: 0.07 });
+                reticle.setAttribute('material', { color: 'white', shader: 'flat', opacity: 0.5, transparent: true });
+                reticle.setAttribute('rotation', '-90 0 0');
+                reticle.setAttribute('visible', 'false');
+                scene.appendChild(reticle);
+
+                this.tick = (time, frame) => {
+                    if (!placed && hitTestSource && referenceSpace) {
+                        const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+                        if (hitTestResults.length > 0) {
+                            const hitPose = hitTestResults[0].getPose(referenceSpace);
+                            reticle.setAttribute('position', hitPose.transform.position);
+                            reticle.setAttribute('visible', true);
+                            statusDisplay.innerText = 'Scan surface. Tap to place model.';
+                        } else {
+                            reticle.setAttribute('visible', false);
+                            statusDisplay.innerText = 'No surface detected. Keep scanning.';
+                        }
+                    } else if (placed) {
+                        reticle.setAttribute('visible', false);
+                    }
+                    if (scene.renderer.xr.getSession()) {
+                        scene.renderer.xr.getSession().requestAnimationFrame(this.tick);
+                    }
+                };
+
+                scene.addEventListener('click', (event) => {
+                    if (!placed && reticle.getAttribute('visible')) {
+                        modelContainer.setAttribute('position', reticle.getAttribute('position'));
+                        modelContainer.setAttribute('gltf-model', '#GREED');
+                        modelContainer.setAttribute('scale', '10 10 10');
+                        modelContainer.setAttribute('rotation', '0 0 0');
+                        modelContainer.setAttribute('visible', true);
+
+                        placed = true;
+                        statusDisplay.innerText = 'Model placed. Move around to view.';
+                        console.log('Model placed at:', modelContainer.object3D.position);
+
+                        if (hitTestSource) {
+                            hitTestSource.cancel();
+                            hitTestSource = null;
+                        }
+                    } else if (!placed && !reticle.getAttribute('visible')) {
+                        statusDisplay.innerText = 'No surface detected. Keep scanning.';
+                    }
+                });
+
+                modelAsset.addEventListener('model-error', (e) => {
+                    console.error('Model Load Error:', e);
+                    statusDisplay.innerText = 'Error loading 3D model. Check console for details.';
+                });
+                modelAsset.addEventListener('loaded', () => {
+                    console.log('GREED model asset loaded successfully');
+                });
+            }
         });
-      }
-    });
-
-    model.addEventListener('model-loaded', () => console.log('Model successfully loaded'));
-
-    document.querySelector('a-assets').addEventListener('error', (e) => {
-      console.error('Asset Load Error:', e);
-      status.innerText = 'Error loading assets. Check console.';
-    });
-
-    document.querySelector('a-scene').addEventListener('error', (e) => {
-      console.error('AR.js Error Details:', e.detail);
-      status.innerText = 'Error loading AR assets. Check console.';
-    });
-  </script>
+    </script>
 </body>
 </html>
