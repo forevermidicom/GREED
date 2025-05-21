@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AR Street Art - V 29 Markerless</title>
+    <title>AR Street Art - V 30 Markerless</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,11 +16,11 @@
 </head>
 <body>
     <div id="status">Initializing AR... Please ensure you are on HTTPS.</div>
-    <div id="version">HTML Version: 29 Markerless</div>
+    <div id="version">HTML Version: 30 Markerless</div>
     <button id="arButton" style="display: none;">Start AR</button>
 
     <a-scene
-        webxr="requiredFeatures: immersive-ar, hit-test; overlayElement: #status;"
+        webxr="optionalFeatures: immersive-ar, hit-test; overlayElement: #status;"
         arjs="sourceType: webcam; debugUIEnabled: false;"
         renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true"
         vr-mode-ui="enabled: false"
@@ -62,14 +62,16 @@
 
                 arButton.addEventListener('click', async () => {
                     try {
-                        xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
+                        xrSession = await navigator.xr.requestSession('immersive-ar', { 
+                            optionalFeatures: ['hit-test', 'local-floor', 'local'] 
+                        });
                         const canvas = scene.canvas;
                         const gl = canvas.getContext('webgl');
                         await gl.makeXRCompatible();
                         xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
                         scene.renderer.xr.setSession(xrSession);
 
-                        referenceSpace = await xrSession.requestReferenceSpace('local-floor');
+                        referenceSpace = await xrSession.requestReferenceSpace('local');
                         hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
 
                         arButton.style.display = 'none';
@@ -77,7 +79,7 @@
                         xrSession.requestAnimationFrame(this.tick);
                     } catch (error) {
                         console.error('Failed to start WebXR:', error);
-                        statusDisplay.innerText = `AR error: ${error.message}. Ensure device supports WebXR AR.`;
+                        statusDisplay.innerText = `AR error: ${error.message}. Check device compatibility and browser version.`;
                     }
                 });
 
