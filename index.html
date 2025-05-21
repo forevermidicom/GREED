@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer - V 20 Markerless</title>
+  <title>AR.js Markerless Viewer - V 22 Markerless</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div id="status">Initializing AR... Please wait.</div>
-  <div id="version">HTML Version: 20 Markerless</div>
+  <div id="version">HTML Version: 22 Markerless</div>
 
   <a-scene
     embedded
@@ -39,38 +39,45 @@
     let placed = false;
     let hitTestSource = null;
     let referenceSpace = null;
+    let xrSession = null;
 
     async function initializeWebXR() {
       try {
+        // Check HTTPS
+        if (window.location.protocol !== 'https:') {
+          throw new Error('WebXR requires HTTPS. Use a secure server.');
+        }
+
         // Check WebXR support
         if (!navigator.xr || !(await navigator.xr.isSessionSupported('immersive-ar'))) {
           throw new Error('WebXR immersive-ar not supported on this device/browser.');
         }
 
+        // Start WebXR session
+        xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
         const scene = document.querySelector('a-scene');
-        const xrSystem = scene.systems['webxr'];
-        if (!xrSystem.xrSession) {
-          status.innerText = 'Starting AR session... Please wait.';
-          await xrSystem.startSession({ mode: 'immersive-ar', requiredFeatures: ['hit-test'] });
-        }
+        const canvas = scene.canvas;
+        const gl = canvas.getContext('webgl');
+        gl.makeXRCompatible(); // Ensure WebGL context is XR-compatible
+        xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+        scene.renderer.xr.setSession(xrSession); // Bind session to A-Frame renderer
 
-        referenceSpace = await xrSystem.xrSession.requestReferenceSpace('local-floor');
-        hitTestSource = await xrSystem.xrSession.requestHitTestSource({ space: referenceSpace });
+        referenceSpace = await xrSession.requestReferenceSpace('local-floor');
+        hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
 
         status.innerText = 'AR Ready. Tap to place model.';
         console.log('WebXR session started successfully.');
       } catch (error) {
         console.error('WebXR initialization error:', error.message);
-        status.innerText = `AR failed: ${error.message}. Use Chrome (Android) or Safari (iOS) with ARCore/ARKit support.`;
+        status.innerText = `AR failed: ${error.message}. Use Chrome 81+ (Android) or Safari 16+ (iOS) with ARCore/ARKit support.`;
       }
     }
 
     document.querySelector('a-scene').addEventListener('loaded', initializeWebXR);
 
     document.addEventListener('click', () => {
-      if (!placed && hitTestSource && referenceSpace) {
-        const scene = document.querySelector('a-scene');
-        scene.systems['webxr'].xrSession.requestAnimationFrame((time, frame) => {
+      if (!placed && hitTestSource && referenceSpace && xrSession) {
+        xrSession.requestAnimationFrame((time, frame) => {
           const hitTestResults = frame.getHitTestResults(hitTestSource);
           if (hitTestResults.length > 0) {
             const pose = hitTestResults[0].getPose(referenceSpace);
