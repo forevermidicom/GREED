@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer</title>
+  <title>AR.js Markerless Viewer - V 15</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div id="status">Loading AR... Tap to place model.</div>
-  <div id="version">HTML Version: 14 (Markerless)</div>
+  <div id="version">HTML Version: 15 (Markerless)</div>
 
   <a-scene
     embedded
@@ -48,14 +48,37 @@
       console.log('AR session started.');
     });
 
-    document.addEventListener('click', () => {
+    document.addEventListener('click', async () => {
       if (!placed) {
-        const scene = document.querySelector('a-scene').systems['webxr'].realityHelper;
-        if (scene && scene.xrSession) {
-          scene.xrSession.requestHitTestSource({ space: scene.xrSession.localReferenceSpace }).then(hitTestSource => {
+        try {
+          const scene = document.querySelector('a-scene').systems['webxr'].realityHelper;
+          if (scene && scene.xrSession) {
+            const hitTestSource = await scene.xrSession.requestHitTestSource({ space: scene.xrSession.localReferenceSpace });
+
             scene.xrSession.requestAnimationFrame((time, frame) => {
               const hitTestResults = frame.getHitTestResults(hitTestSource);
               if (hitTestResults.length > 0) {
                 const pose = hitTestResults[0].getPose(scene.xrSession.localReferenceSpace);
-                const position = pose.transform.position;
-                model.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+                model.setAttribute('position', `${pose.transform.position.x} ${pose.transform.position.y} ${pose.transform.position.z}`);
+                model.setAttribute('visible', true);
+                placed = true;
+                status.innerText = 'Model placed. Move around to view.';
+                console.log('Model placed at:', pose.transform.position);
+              } else {
+                status.innerText = 'No surface detected. Keep scanning.';
+              }
+            });
+          } else {
+            status.innerText = 'WebXR session not found.';
+          }
+        } catch (error) {
+          console.error('Hit test error:', error);
+          status.innerText = 'Hit test failed. Check console for details.';
+        }
+      }
+    });
+
+    model.addEventListener('model-loaded', () => console.log('Model successfully loaded'));
+  </script>
+</body>
+</html>
