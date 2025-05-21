@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js Markerless Viewer - V 19 Markerless</title>
+  <title>AR.js Markerless Viewer - V 20 Markerless</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div id="status">Initializing AR... Please wait.</div>
-  <div id="version">HTML Version: 19 Markerless</div>
+  <div id="version">HTML Version: 20 Markerless</div>
 
   <a-scene
     embedded
@@ -42,25 +42,26 @@
 
     async function initializeWebXR() {
       try {
-        const scene = document.querySelector('a-scene').systems['webxr'];
-        if (!scene.xrSession) {
+        // Check WebXR support
+        if (!navigator.xr || !(await navigator.xr.isSessionSupported('immersive-ar'))) {
+          throw new Error('WebXR immersive-ar not supported on this device/browser.');
+        }
+
+        const scene = document.querySelector('a-scene');
+        const xrSystem = scene.systems['webxr'];
+        if (!xrSystem.xrSession) {
           status.innerText = 'Starting AR session... Please wait.';
-          await scene.startSession();
-          await new Promise(resolve => setTimeout(resolve, 3000)); // Ensure time for initialization
+          await xrSystem.startSession({ mode: 'immersive-ar', requiredFeatures: ['hit-test'] });
         }
 
-        if (!scene.xrSession) {
-          throw new Error('WebXR session did not start.');
-        }
-
-        referenceSpace = await scene.xrSession.requestReferenceSpace('local');
-        hitTestSource = await scene.xrSession.requestHitTestSource({ space: referenceSpace });
+        referenceSpace = await xrSystem.xrSession.requestReferenceSpace('local-floor');
+        hitTestSource = await xrSystem.xrSession.requestHitTestSource({ space: referenceSpace });
 
         status.innerText = 'AR Ready. Tap to place model.';
         console.log('WebXR session started successfully.');
       } catch (error) {
-        console.error('WebXR initialization error:', error);
-        status.innerText = 'AR failed to start. Try reloading the page.';
+        console.error('WebXR initialization error:', error.message);
+        status.innerText = `AR failed: ${error.message}. Use Chrome (Android) or Safari (iOS) with ARCore/ARKit support.`;
       }
     }
 
@@ -68,8 +69,8 @@
 
     document.addEventListener('click', () => {
       if (!placed && hitTestSource && referenceSpace) {
-        const scene = document.querySelector('a-scene').systems['webxr'];
-        scene.xrSession.requestAnimationFrame((time, frame) => {
+        const scene = document.querySelector('a-scene');
+        scene.systems['webxr'].xrSession.requestAnimationFrame((time, frame) => {
           const hitTestResults = frame.getHitTestResults(hitTestSource);
           if (hitTestResults.length > 0) {
             const pose = hitTestResults[0].getPose(referenceSpace);
@@ -82,13 +83,20 @@
             status.innerText = 'No surface detected. Keep scanning.';
           }
         });
-      } else {
-        console.warn('AR session not ready.');
-        status.innerText = 'AR session still initializing... Please wait.';
       }
     });
 
     model.addEventListener('model-loaded', () => console.log('Model successfully loaded'));
+
+    document.querySelector('a-assets').addEventListener('error', (e) => {
+      console.error('Asset Load Error:', e);
+      status.innerText = 'Error loading assets. Check console.';
+    });
+
+    document.querySelector('a-scene').addEventListener('error', (e) => {
+      console.error('AR.js Error Details:', e.detail);
+      status.innerText = 'Error loading AR assets. Check console.';
+    });
   </script>
 </body>
 </html>
