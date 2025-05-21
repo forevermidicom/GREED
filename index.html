@@ -1,20 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AR Street Art - V 23 Markerless</title>
+    <title>AR Street Art - V 24 Markerless</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        #status { position: fixed; top: 0; left: 0; right: 0; padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; z-index: 10; }
-        #version { position: fixed; bottom: 10px; left: 10px; padding: 5px; background: rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; font-size: 12px; z-index: 10; }
+        #status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-family: sans-serif;
+            z-index: 10;
+        }
+        #version {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-family: sans-serif;
+            font-size: 12px;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
-    <div id="status">Initializing AR...</div>
-    <div id="version">HTML Version: 23 Markerless</div>
+    <div id="status">Initializing AR... Please ensure you are on HTTPS.</div>
+    <div id="version">HTML Version: 24 Markerless</div>
 
     <a-scene
         webxr="requiredFeatures: immersive-ar, hit-test; overlayElement: #status;"
@@ -44,20 +65,29 @@
                 let hitTestSource = null;
                 let referenceSpace = null;
 
+                statusDisplay.innerText = 'Tap the "AR" button below to start. (Requires HTTPS)';
+
                 scene.addEventListener('loaded', () => {
-                    statusDisplay.innerText = 'Initializing AR...';
+                    console.log('A-Frame scene loaded.');
                 });
 
                 scene.addEventListener('enter-vr', async () => {
                     if (scene.is('ar-mode')) {
-                        statusDisplay.innerText = 'AR Ready. Tap to place model.';
-                        console.log('Entered AR mode. WebXR session started.');
+                        console.log('Entered AR mode. Attempting WebXR session.');
+                        statusDisplay.innerText = 'Scanning environment... Move your device to detect a surface.';
 
-                        const xrSession = scene.renderer.xr.getSession();
-                        referenceSpace = await xrSession.requestReferenceSpace('viewer');
-                        hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
+                        try {
+                            const xrSession = scene.renderer.xr.getSession();
+                            referenceSpace = await xrSession.requestReferenceSpace('viewer');
+                            hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
 
-                        xrSession.requestAnimationFrame(this.tick);
+                            xrSession.requestAnimationFrame(this.tick);
+                            console.log('WebXR hit test source ready.');
+                            statusDisplay.innerText = 'Move your device to scan for a surface. Tap to place model.';
+                        } catch (error) {
+                            console.error('Failed to start WebXR hit test:', error);
+                            statusDisplay.innerText = `AR error: ${error.message}. Ensure device supports WebXR AR.`;
+                        }
                     }
                 });
 
@@ -65,6 +95,11 @@
                     statusDisplay.innerText = 'Exited AR. Reload page to restart.';
                     placed = false;
                     modelContainer.setAttribute('visible', false);
+                    if (hitTestSource) {
+                        hitTestSource.cancel();
+                        hitTestSource = null;
+                    }
+                    console.log('Exited AR mode.');
                 });
 
                 const reticle = document.createElement('a-entity');
@@ -82,7 +117,7 @@
                             const hitPose = hitTestResults[0].getPose(referenceSpace);
                             reticle.setAttribute('position', hitPose.transform.position);
                             reticle.setAttribute('visible', true);
-                            statusDisplay.innerText = 'Scan surface. Tap to place model.';
+                            statusDisplay.innerText = 'Surface detected. Tap to place model.';
                         } else {
                             reticle.setAttribute('visible', false);
                             statusDisplay.innerText = 'No surface detected. Keep scanning.';
